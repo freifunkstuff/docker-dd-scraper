@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
-import requests, json, datetime
+import requests, json, datetime, time
 nodes = requests.get("https://meshviewer.freifunk-dresden.de/data/nodes.json").json()
 graph = requests.get("https://meshviewer.freifunk-dresden.de/data/graph.json").json()
 
+tz=time.strftime('%z')
+
 nodes_le={
-    'timestamp': nodes['timestamp'],
+    'timestamp': nodes['timestamp']+tz,
     'nodes': [],
     'links': []
 }
@@ -25,8 +27,8 @@ for n in nodes['nodes']:
         'addresses': n['nodeinfo']['network']['addresses'],
         'node_id': nodeid(n['nodeinfo']['node_id']),
         'hostname': n['nodeinfo']['hostname'],
-        'firstseen': n['firstseen'],
-        'lastseen': n['lastseen'],
+        'firstseen': n['firstseen']+tz,
+        'lastseen': n['lastseen']+tz,
         'clients': n['statistics']['clients'],
         'clients_other': 0,
         'clients_wifi5': 0,
@@ -46,7 +48,7 @@ for n in nodes['nodes']:
     if 'location' in n['nodeinfo']:
         node['location']= n['nodeinfo']['location']
     if 'uptime' in n['statistics']:
-        node['uptime']=(datetime.datetime.now()-datetime.timedelta(seconds=n['statistics']['uptime'])).strftime('%Y-%m-%dT%H:%M:%S'),
+        node['uptime']=(datetime.datetime.now()-datetime.timedelta(seconds=n['statistics']['uptime'])).strftime('%Y-%m-%dT%H:%M:%S')+tz
     if 'gateway' in n['statistics']:
         node['gateway']=n['statistics']['gateway']
         node['gateway_nexthop']=n['statistics']['gateway']
