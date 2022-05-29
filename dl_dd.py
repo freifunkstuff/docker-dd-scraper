@@ -86,16 +86,5 @@ for l in graph['batadv']['links']:
     nodes_le['links'].append(link)
     inverse_links["%s-%s-%s"%(source_id,target_id,ltype)]=link
 
-
-#nodes_le=list(filter(lambda n: n['nodeinfo']['system']['site_code']=='Leipzig',nodes['nodes']))
-#nodes['nodes']=nodes_le
-#nodes['links']=[]
-#node_ids=list(node['node_id'] for node in nodes_le)
-#print(node_ids)
-#print(json.dumps(graph['batadv']['nodes']))
-#print(json.dumps(graph['batadv']['nodes']))
-
-#print(node_ids)
-
 print(json.dumps(nodes_le))
 
