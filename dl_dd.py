@@ -13,8 +13,9 @@ nodes_le={
 }
 
 def nodeid(id):
-    id=str(id)
-    return 'dd0000000000'[0:12-len(id)]+id
+    return 'ffdd00{:06x}'.format(int(id))
+def nodemac(nodeid):
+    return ':'.join(a + b for a, b in zip(nodeid[::2], nodeid[1::2]))
 
 node_ids=[]
 
@@ -22,10 +23,11 @@ for n in nodes['nodes']:
     if n['nodeinfo']['system']['site_code']!='Leipzig':
         node_ids.append(None)
         continue
-    node_ids.append(nodeid(n['nodeinfo']['node_id']))
+    node_id=nodeid(n['nodeinfo']['node_id'])
+    node_ids.append(node_id)
     node={
         'addresses': n['nodeinfo']['network']['addresses'],
-        'node_id': nodeid(n['nodeinfo']['node_id']),
+        'node_id': node_id,
         'hostname': n['nodeinfo']['hostname'],
         'firstseen': n['firstseen']+tz,
         'lastseen': n['lastseen']+tz,
@@ -38,7 +40,7 @@ for n in nodes['nodes']:
         'is_online': n['flags']['online'],
         'is_gateway': n['flags']['gateway'],
         'domain': 'Leipzig (ddfw)',
-        'mac': n['nodeinfo']['node_id'],
+        'mac': nodemac(node_id),
         'firmware': n['nodeinfo']['software']['firmware'],
         'autoupdater': n['nodeinfo']['software']['autoupdater'],
         'model': n['nodeinfo']['hardware']['model'],
@@ -64,18 +66,25 @@ for l in graph['batadv']['links']:
     target_id=node_ids[l['target']]
     if target_id is None:
         continue
-    if "%s-%s-%s"%(target_id,source_id,l['type']) in inverse_links:
-        inverse_links["%s-%s-%s"%(target_id,source_id,l['type'])]['target_tq']=1/l['tq']
+    ltype=l['type']
+    if ltype=='wireless':
+        ltype='wifi'
+    else if ltype=='tunnel':
+        ltype='vpn'
+    if "%s-%s-%s"%(target_id,source_id,ltype) in inverse_links:
+        inverse_links["%s-%s-%s"%(target_id,source_id,ltype)]['target_tq']=1/l['tq']
         continue;
     link={
         'source': source_id,
+        'source_address': nodemac(source_id),
         'target': target_id,
-        'type': l['type'],
+        'target_address': nodemac(target_id),
+        'type': ltype,
         'source_tq': 1/l['tq'],
         'target_tq': 1/l['tq'],
     }
     nodes_le['links'].append(link)
-    inverse_links["%s-%s-%s"%(source_id,target_id,l['type'])]=link
+    inverse_links["%s-%s-%s"%(source_id,target_id,ltype)]=link
 
 
 #nodes_le=list(filter(lambda n: n['nodeinfo']['system']['site_code']=='Leipzig',nodes['nodes']))
