@@ -35,7 +35,7 @@ for n in nodes['nodes']:
         'clients_other': 0,
         'clients_wifi5': 0,
         'clients_wifi24': 0,
-        'owner': n['nodeinfo']['owner']['contact'],
+        'owner': n['nodeinfo']['owner'].get('contact',''),
         'autoupdater': n['nodeinfo']['software']['autoupdater'],
         'is_online': n['flags']['online'],
         'is_gateway': n['flags']['gateway'],
@@ -69,7 +69,7 @@ for l in graph['batadv']['links']:
     ltype=l['type']
     if ltype=='wireless':
         ltype='wifi'
-    else if ltype=='tunnel':
+    elif ltype=='tunnel':
         ltype='vpn'
     if "%s-%s-%s"%(target_id,source_id,ltype) in inverse_links:
         inverse_links["%s-%s-%s"%(target_id,source_id,ltype)]['target_tq']=1/l['tq']
